@@ -1,489 +1,422 @@
-// Basic app state
+// ─── STATE ───────────────────────────────────────────
 const state = {
-  teachCompleted: new Set(),
+  startTime: Date.now(),
+  teach: { completed: new Set() },
   practice: {
+    seen: new Set(),
     answered: 0,
     correct: 0,
-    conceptStats: {} // concept -> {answered, correct}
+    concepts: {}
   },
   test: {
-    started: false,
     index: 0,
     score: 0,
-    answered: 0
-  },
-  startTime: Date.now()
+    answered: 0,
+    running: false
+  }
 };
 
-// UTIL
+const TOTAL_SEGS = 9;
 
+// ─── SCREEN SWITCHING ────────────────────────────────
 function showScreen(id) {
-  document
-    .querySelectorAll(".screen")
-    .forEach((s) => s.classList.remove("active"));
+  document.querySelectorAll('.screen')
+    .forEach(s => s.classList.remove('active'));
   const el = document.getElementById(id);
-  if (el) el.classList.add("active");
+  if (el) el.classList.add('active');
 }
 
-function openModal(modalId) {
-  document.getElementById(modalId).classList.add("active");
-}
-
-function closeModal(modalId) {
-  document.getElementById(modalId).classList.remove("active");
-}
-
-// TOP NAV
-document.querySelectorAll(".nav-tab").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    document
-      .querySelectorAll(".nav-tab")
-      .forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
+// ─── TOP NAV TABS ────────────────────────────────────
+document.querySelectorAll('.nav-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-tab')
+      .forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
     showScreen(btn.dataset.target);
+    if (btn.dataset.target === 'screen-reports') updateReports();
   });
 });
 
-// LEARN: segment switching
-document.querySelectorAll(".segment-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const seg = btn.dataset.segment;
-    document
-      .querySelectorAll(".segment-btn")
-      .forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
-
-    document
-      .querySelectorAll(".teach-segment")
-      .forEach((s) => s.classList.remove("active"));
-    const segEl = document.getElementById(seg);
-    if (segEl) segEl.classList.add("active");
+// ─── SEGMENT SWITCHING ───────────────────────────────
+document.querySelectorAll('.segment-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.segment-btn')
+      .forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.teach-segment')
+      .forEach(s => s.classList.remove('active'));
+    const seg = document.getElementById(btn.dataset.segment);
+    if (seg) seg.classList.add('active');
   });
 });
 
-// LEARN: completion + progress
+// ─── TEACH PROGRESS ──────────────────────────────────
 function updateTeachProgress() {
-  const total = document.querySelectorAll(".teach-segment").length;
-  const done = state.teachCompleted.size;
-  const pct = Math.round((done / total) * 100);
-  document.getElementById("teachProgressFill").style.width = `${pct}%`;
-  document.getElementById("teachProgressValue").textContent = `${pct}%`;
+  const done = state.teach.completed.size;
+  const pct = Math.round((done / TOTAL_SEGS) * 100);
+  document.getElementById('teachProgressFill').style.width = pct + '%';
+  document.getElementById('teachProgressValue').textContent = pct + '%';
 }
 
-document.querySelectorAll("[data-complete-seg]").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const seg = btn.dataset.completeSeg;
-    state.teachCompleted.add(seg);
-    updateTeachProgress();
-    btn.textContent = "Marked as understood";
+// ─── MARK AS UNDERSTOOD ──────────────────────────────
+document.querySelectorAll('.mark-done').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const seg = btn.dataset.seg;
+    const unlock = btn.dataset.unlock;
+    state.teach.completed.add(seg);
+    btn.textContent = 'Understood ✔';
     btn.disabled = true;
-    btn.classList.add("btn-disabled");
+    updateTeachProgress();
+    if (unlock && unlock !== 'done') {
+      const nextBtn = document.querySelector(
+        `.segment-btn[data-segment="${unlock}"]`
+      );
+      if (nextBtn) nextBtn.classList.remove('locked');
+    }
   });
 });
 
-// QUESTION HANDLER (common to quick checks + practice)
-function handleOptionGroupClick(groupEl, feedbackId, questionKey, concept) {
-  groupEl.addEventListener("click", (e) => {
-    const btn = e.target.closest(".option");
+// ─── OPTION CLICK HANDLER ────────────────────────────
+function attachOptions(container, fbId, qid, concept) {
+  container.addEventListener('click', e => {
+    const btn = e.target.closest('.option');
     if (!btn) return;
+    const correct = btn.dataset.correct === 'true';
+    const fb = document.getElementById(fbId);
 
-    const multi = groupEl.dataset.multi === "true";
-    const isCorrect = btn.dataset.correct === "true";
-    const feedbackEl = document.getElementById(feedbackId);
+    container.querySelectorAll('.option')
+      .forEach(o => o.classList.remove('correct', 'wrong'));
 
-    if (!multi) {
-      groupEl
-        .querySelectorAll(".option")
-        .forEach((o) => o.classList.remove("correct-selected", "wrong-selected"));
-    }
-
-    if (isCorrect) {
-      btn.classList.add("correct-selected");
-      btn.classList.remove("wrong-selected");
-      feedbackEl.textContent = "Correct!";
-      feedbackEl.classList.add("ok");
-      feedbackEl.classList.remove("bad");
+    if (correct) {
+      btn.classList.add('correct');
+      fb.textContent = 'Correct!';
+      fb.className = 'feedback ok';
     } else {
-      btn.classList.add("wrong-selected");
-      btn.classList.remove("correct-selected");
-      feedbackEl.textContent = "Not quite. Try again.";
-      feedbackEl.classList.add("bad");
-      feedbackEl.classList.remove("ok");
+      btn.classList.add('wrong');
+      fb.textContent = 'Not quite — try again.';
+      fb.className = 'feedback bad';
     }
 
-    // Update practice stats only for practice questions (qid starts with p)
-    if (questionKey && questionKey.startsWith("p")) {
-      if (!state.practice.seen) state.practice.seen = new Set();
-      if (!state.practice.seen.has(questionKey)) {
-        state.practice.answered += 1;
-        if (isCorrect) state.practice.correct += 1;
-        state.practice.seen.add(questionKey);
+    if (qid && !state.practice.seen.has(qid)) {
+      state.practice.seen.add(qid);
+      state.practice.answered++;
+      if (correct) state.practice.correct++;
+      if (concept) {
+        if (!state.practice.concepts[concept])
+          state.practice.concepts[concept] = { a: 0, c: 0 };
+        state.practice.concepts[concept].a++;
+        if (correct) state.practice.concepts[concept].c++;
+      }
+    }
 
-        if (!state.practice.conceptStats[concept]) {
-          state.practice.conceptStats[concept] = { answered: 0, correct: 0 };
-        }
-        state.practice.conceptStats[concept].answered += 1;
-        if (isCorrect) state.practice.conceptStats[concept].correct += 1;
+    // unlock mark-done button when correct answer chosen
+    if (correct) {
+      const seg = container.closest('.teach-segment');
+      if (seg) {
+        const markBtn = seg.querySelector('.mark-done');
+        if (markBtn) markBtn.disabled = false;
       }
     }
   });
 }
 
-// Attach handlers to all quick checks (qcX)
-document.querySelectorAll(".options[data-question-id]").forEach((group) => {
-  const qid = group.dataset.questionId;
-  const fbId = `feedback-${qid}`;
-  handleOptionGroupClick(group, fbId, null, null);
+// attach to all quick check options (learn screen)
+document.querySelectorAll('.teach-segment').forEach(seg => {
+  const optGroup = seg.querySelector('.options');
+  const qid = optGroup ? optGroup.dataset.qid : null;
+  const fbId = qid ? 'fb-' + qid : null;
+  if (optGroup && fbId) attachOptions(optGroup, fbId, null, null);
 });
 
-// Attach handlers to practice questions (pX with concept)
-document
-  .querySelectorAll(".practice-question")
-  .forEach((pq) => {
-    const qid = pq.dataset.qid;
-    const concept = pq.dataset.concept;
-    const group = pq.querySelector(".options");
-    const fbId = `feedback-${qid}`;
-    handleOptionGroupClick(group, fbId, qid, concept);
-  });
-
-// PRACTICE: level tab switching
-document.querySelectorAll(".level-tab").forEach((tab) => {
-  tab.addEventListener("click", () => {
-    document
-      .querySelectorAll(".level-tab")
-      .forEach((t) => t.classList.remove("active"));
-    tab.classList.add("active");
-
-    const level = tab.dataset.level;
-    document
-      .querySelectorAll(".level-panel")
-      .forEach((p) => p.classList.remove("active"));
-    document.getElementById(`level-${level}`).classList.add("active");
+// attach to all practice options
+document.querySelectorAll('.practice-q').forEach(pq => {
+  const optGroup = pq.querySelector('.options');
+  const qid = pq.dataset.qid;
+  const concept = pq.dataset.concept;
+  const fbId = 'fb-' + qid;
+  if (optGroup) attachOptions(optGroup, fbId, qid, concept);
+});
+// ─── LEVEL TABS (PRACTICE) ───────────────────────────
+document.querySelectorAll('.level-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.level-tab')
+      .forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.level-panel')
+      .forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById('level-' + tab.dataset.level);
+    if (panel) panel.classList.add('active');
   });
 });
 
-// TEST QUESTIONS
-const testQuestions = [
+// ─── TEST QUESTIONS ──────────────────────────────────
+const testQs = [
   {
-    text: "Which of these is NOT a rational number?",
-    options: [
-      { text: "3/4", correct: false },
-      { text: "−5", correct: false },
-      { text: "√2", correct: true }
-    ],
-    concept: "definition"
+    q: 'Which of these is NOT a rational number?',
+    opts: ['3/4', '−5', '√2'],
+    ans: 2,
+    concept: 'definition'
   },
   {
-    text: "Rational numbers are closed under which operation(s)?",
-    options: [
-      { text: "Addition and multiplication", correct: true },
-      { text: "Addition only", correct: false },
-      { text: "Division only", correct: false }
-    ],
-    concept: "closure"
+    q: 'Rational numbers are closed under which operations?',
+    opts: ['Addition and multiplication', 'Addition only', 'Division only'],
+    ans: 0,
+    concept: 'closure'
   },
   {
-    text: "For rational numbers, which is true?",
-    options: [
-      { text: "a + b = b + a", correct: true },
-      { text: "a − b = b − a", correct: false },
-      { text: "a ÷ b = b ÷ a", correct: false }
-    ],
-    concept: "comm-assoc"
+    q: 'Which is true for rational numbers?',
+    opts: ['a + b = b + a', 'a − b = b − a', 'a ÷ b = b ÷ a'],
+    ans: 0,
+    concept: 'comm-assoc'
   },
   {
-    text: "What is the additive identity for rational numbers?",
-    options: [
-      { text: "0", correct: true },
-      { text: "1", correct: false },
-      { text: "−1", correct: false }
-    ],
-    concept: "identity"
+    q: 'What is the additive identity for rational numbers?',
+    opts: ['0', '1', '−1'],
+    ans: 0,
+    concept: 'identity'
   },
   {
-    text: "What is the reciprocal of 4/7?",
-    options: [
-      { text: "7/4", correct: true },
-      { text: "−7/4", correct: false },
-      { text: "4/7", correct: false }
-    ],
-    concept: "inverse"
+    q: 'What is the reciprocal of 4/7?',
+    opts: ['7/4', '−7/4', '4/7'],
+    ans: 0,
+    concept: 'inverse'
   },
   {
-    text: "Simplify using distributive property: 2(3/4 + 1/4).",
-    options: [
-      { text: "2", correct: false },
-      { text: "1", correct: false },
-      { text: "2", correct: false },
-      { text: "2", correct: false }
-    ],
-    concept: "distributive"
+    q: 'Simplify using distributive property: 2 × (3/4 + 1/4)',
+    opts: ['1', '2', '3'],
+    ans: 1,
+    concept: 'distributive'
   },
   {
-    text: "3/5 lies between which integers?",
-    options: [
-      { text: "0 and 1", correct: true },
-      { text: "1 and 2", correct: false },
-      { text: "−1 and 0", correct: false }
-    ],
-    concept: "numberline"
+    q: '3/5 lies between which two integers?',
+    opts: ['0 and 1', '1 and 2', '−1 and 0'],
+    ans: 0,
+    concept: 'numberline'
   },
   {
-    text: "Which is between −1 and 0?",
-    options: [
-      { text: "−3/2", correct: false },
-      { text: "−1/2", correct: true },
-      { text: "1/2", correct: false }
-    ],
-    concept: "between"
+    q: 'Which number lies between −1 and 0?',
+    opts: ['−3/2', '−1/2', '1/2'],
+    ans: 1,
+    concept: 'between'
   },
   {
-    text: "Add 2/3 and its additive inverse.",
-    options: [
-      { text: "0", correct: true },
-      { text: "4/3", correct: false },
-      { text: "−4/3", correct: false }
-    ],
-    concept: "inverse"
+    q: 'Add 2/3 and its additive inverse.',
+    opts: ['0', '4/3', '−4/3'],
+    ans: 0,
+    concept: 'inverse'
   },
   {
-    text: "Pick the correct statement.",
-    options: [
-      { text: "Rational numbers are finite on the number line.", correct: false },
-      { text: "Between any two rational numbers there is another one.", correct: true },
-      { text: "Only integers are rational numbers.", correct: false }
+    q: 'Between any two rational numbers there are…',
+    opts: [
+      'Infinitely many rational numbers',
+      'No rational numbers',
+      'Exactly one rational number'
     ],
-    concept: "between"
+    ans: 0,
+    concept: 'between'
   }
 ];
 
-const testCard = document.getElementById("testCard");
-const testQuestionText = document.getElementById("testQuestionText");
-const testOptionsEl = document.getElementById("testOptions");
-const testFeedback = document.getElementById("testFeedback");
-const testProgressPill = document.getElementById("testProgressPill");
-const testStatus = document.getElementById("testStatus");
-const nextTestQuestionBtn = document.getElementById("nextTestQuestionBtn");
-
-function renderTestQuestion() {
+function renderTestQ() {
   const idx = state.test.index;
-  const q = testQuestions[idx];
-  testQuestionText.textContent = q.text;
-  testOptionsEl.innerHTML = "";
-  testFeedback.textContent = "";
-  nextTestQuestionBtn.disabled = true;
+  const q = testQs[idx];
+  document.getElementById('testPill').textContent =
+    'Question ' + (idx + 1) + ' of ' + testQs.length;
+  document.getElementById('testQ').textContent = q.q;
+  document.getElementById('testFeedback').textContent = '';
+  document.getElementById('testFeedback').className = 'feedback';
+  document.getElementById('nextTestBtn').disabled = true;
 
-  testProgressPill.textContent = `Question ${idx + 1} of ${testQuestions.length}`;
+  const optEl = document.getElementById('testOptions');
+  optEl.innerHTML = '';
 
-  q.options.forEach((opt, i) => {
-    const btn = document.createElement("button");
-    btn.className = "option";
-    btn.textContent = opt.text;
-    btn.addEventListener("click", () => {
-      // lock others
-      testOptionsEl
-        .querySelectorAll(".option")
-        .forEach((o) => o.classList.remove("correct-selected", "wrong-selected"));
-      if (opt.correct) {
-        btn.classList.add("correct-selected");
-        testFeedback.textContent = "Correct!";
-        testFeedback.classList.add("ok");
-        testFeedback.classList.remove("bad");
-        state.test.score += 1;
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.textContent = opt;
+    btn.addEventListener('click', () => {
+      optEl.querySelectorAll('.option')
+        .forEach(o => o.classList.remove('correct', 'wrong'));
+      const correct = i === q.ans;
+      btn.classList.add(correct ? 'correct' : 'wrong');
+
+      const fb = document.getElementById('testFeedback');
+      if (correct) {
+        fb.textContent = 'Correct!';
+        fb.className = 'feedback ok';
+        state.test.score++;
       } else {
-        btn.classList.add("wrong-selected");
-        testFeedback.textContent = "Not correct, we will revise this in Learn.";
-        testFeedback.classList.add("bad");
-        testFeedback.classList.remove("ok");
+        fb.textContent = 'Not correct — review this in Learn.';
+        fb.className = 'feedback bad';
       }
-      state.test.answered += 1;
 
-      // track concept stats also as practice
-      const concept = q.concept;
-      if (!state.practice.conceptStats[concept]) {
-        state.practice.conceptStats[concept] = { answered: 0, correct: 0 };
-      }
-      state.practice.conceptStats[concept].answered += 1;
-      if (opt.correct) state.practice.conceptStats[concept].correct += 1;
-      state.practice.answered += 1;
-      if (opt.correct) state.practice.correct += 1;
+      state.test.answered++;
 
-      nextTestQuestionBtn.disabled = false;
+      // also feed into practice concept stats
+      if (!state.practice.concepts[q.concept])
+        state.practice.concepts[q.concept] = { a: 0, c: 0 };
+      state.practice.concepts[q.concept].a++;
+      if (correct) state.practice.concepts[q.concept].c++;
+      state.practice.answered++;
+      if (correct) state.practice.correct++;
+
+      document.getElementById('nextTestBtn').disabled = false;
     });
-    testOptionsEl.appendChild(btn);
+    optEl.appendChild(btn);
   });
 }
 
-document.getElementById("startTestBtn").addEventListener("click", () => {
-  state.test.started = true;
+document.getElementById('startTestBtn').addEventListener('click', () => {
   state.test.index = 0;
   state.test.score = 0;
   state.test.answered = 0;
-  testCard.style.display = "block";
-  testStatus.textContent = "";
-  renderTestQuestion();
+  state.test.running = true;
+  document.getElementById('testStatus').textContent = '';
+  document.getElementById('testCard').style.display = 'block';
+  renderTestQ();
 });
 
-nextTestQuestionBtn.addEventListener("click", () => {
-  if (state.test.index < testQuestions.length - 1) {
-    state.test.index += 1;
-    renderTestQuestion();
+document.getElementById('nextTestBtn').addEventListener('click', () => {
+  if (state.test.index < testQs.length - 1) {
+    state.test.index++;
+    renderTestQ();
   } else {
-    // finished
-    testCard.style.display = "none";
-    const pct = Math.round(
-      (state.test.score / testQuestions.length) * 100
-    );
-    testStatus.textContent = `Test finished: ${state.test.score}/${testQuestions.length} correct (${pct}%).`;
+    document.getElementById('testCard').style.display = 'none';
+    const pct = Math.round((state.test.score / testQs.length) * 100);
+    document.getElementById('testStatus').textContent =
+      'Test done: ' + state.test.score + '/' + testQs.length +
+      ' correct (' + pct + '%). Go to Reports to see full breakdown.';
     updateReports();
   }
 });
+// ─── REPORTS ─────────────────────────────────────────
+const conceptNames = {
+  'definition':  'Definition & identification',
+  'closure':     'Closure property',
+  'comm-assoc':  'Commutativity & associativity',
+  'identity':    'Role of 0 & 1',
+  'inverse':     'Inverse & reciprocal',
+  'distributive':'Distributive property',
+  'numberline':  'Number line',
+  'between':     'Between two rationals'
+};
 
-// PARENT MODAL
-const parentModal = document.getElementById("parentModal");
-document.getElementById("openParentViewBtn").addEventListener("click", () => {
-  openModal("parentModal");
-});
-document
-  .getElementById("closeParentModalBtn")
-  .addEventListener("click", () => closeModal("parentModal"));
-document
-  .getElementById("openSampleReportBtn")
-  .addEventListener("click", () => {
-    closeModal("parentModal");
-    // switch to Reports tab
-    document
-      .querySelectorAll(".nav-tab")
-      .forEach((b) => b.classList.remove("active"));
-    document
-      .querySelector('.nav-tab[data-target="screen-reports"]')
-      .classList.add("active");
-    showScreen("screen-reports");
-    updateReports();
-  });
-
-// INFO MODAL (payment, download, notify)
-const infoModal = document.getElementById("infoModal");
-const infoTitle = document.getElementById("infoModalTitle");
-const infoBody = document.getElementById("infoModalBody");
-
-function openInfoModal(title, body) {
-  infoTitle.textContent = title;
-  infoBody.textContent = body;
-  openModal("infoModal");
-}
-
-document
-  .getElementById("closeInfoModalBtn")
-  .addEventListener("click", () => closeModal("infoModal"));
-
-document.getElementById("paymentCtaBtn").addEventListener("click", () => {
-  openInfoModal(
-    "Payment coming soon",
-    "In the full Nomad Tutor App, this button will unlock extra practice, voice‑over teaching and detailed reports."
-  );
-});
-
-document.getElementById("downloadAppBtn").addEventListener("click", () => {
-  openInfoModal(
-    "Download SimplifyLiving",
-    "In the full release this button will open the Google Play page for the SimplifyLiving app."
-  );
-});
-
-document.getElementById("notifyBtn").addEventListener("click", () => {
-  openInfoModal(
-    "Notify me",
-    "Later, parents can leave their email or WhatsApp number here to get updates when more chapters go live."
-  );
-});
-
-// REPORTS
-
-function formatTimeMinutes(ms) {
-  const mins = Math.round(ms / 60000);
-  return mins <= 0 ? "<1 min" : `${mins} min`;
+function formatTime(ms) {
+  const m = Math.floor(ms / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  return m > 0 ? m + ' min ' + s + ' sec' : s + ' sec';
 }
 
 function updateReports() {
-  const now = Date.now();
-  const elapsed = now - state.startTime;
-  document.getElementById("kpiTime").innerHTML = formatTimeMinutes(elapsed);
+  const elapsed = Date.now() - state.startTime;
+  document.getElementById('kpiTime').textContent = formatTime(elapsed);
 
   const totalQ = state.practice.answered;
-  const correctQ = state.practice.correct;
-  const acc = totalQ ? Math.round((correctQ / totalQ) * 100) : 0;
-  document.getElementById("kpiQuestions").textContent = totalQ;
-  document.getElementById("kpiAccuracy").textContent = `${acc}%`;
+  const totalC = state.practice.correct;
+  const acc = totalQ ? Math.round((totalC / totalQ) * 100) : 0;
+  document.getElementById('kpiQ').textContent = totalQ;
+  document.getElementById('kpiAcc').textContent = acc + '%';
 
-  const tbody = document.getElementById("conceptTableBody");
-  tbody.innerHTML = "";
+  const tbody = document.getElementById('conceptBody');
+  tbody.innerHTML = '';
 
-  const conceptNames = {
-    definition: "Definition & identification",
-    closure: "Closure property",
-    "comm-assoc": "Commutativity & associativity",
-    identity: "Role of 0 & 1",
-    inverse: "Inverse & reciprocal",
-    distributive: "Distributive property",
-    numberline: "Number line",
-    between: "Between two rationals"
-  };
-
-  Object.keys(conceptNames).forEach((key) => {
-    const stats = state.practice.conceptStats[key] || {
-      answered: 0,
-      correct: 0
-    };
-    const ans = stats.answered;
-    const cor = stats.correct;
-    const pct = ans ? Math.round((cor / ans) * 100) : 0;
-
-    let statusText = "Needs more data";
-    let statusClass = "status-practice";
-    if (!ans) {
-      statusText = "Not attempted yet";
-      statusClass = "status-practice";
-    } else if (pct >= 80) {
-      statusText = "Strong";
-      statusClass = "status-strong";
-    } else if (pct >= 50) {
-      statusText = "Needs practice";
-      statusClass = "status-practice";
-    } else {
-      statusText = "Needs help";
-      statusClass = "status-help";
+  Object.keys(conceptNames).forEach(key => {
+    const stat = state.practice.concepts[key] || { a: 0, c: 0 };
+    const pct = stat.a ? Math.round((stat.c / stat.a) * 100) : null;
+    let statusClass = 'cs cs-none';
+    let statusText = 'Not attempted';
+    if (pct !== null) {
+      if (pct >= 80) { statusClass = 'cs cs-strong'; statusText = 'Strong'; }
+      else if (pct >= 50) { statusClass = 'cs cs-practice'; statusText = 'Needs practice'; }
+      else { statusClass = 'cs cs-help'; statusText = 'Needs help'; }
     }
-
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${conceptNames[key]}</td>
-      <td>${ans ? pct + "%" : "—"}</td>
-      <td><span class="concept-status ${statusClass}">${statusText}</span></td>
-    `;
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>' + conceptNames[key] + '</td>' +
+      '<td>' + (pct !== null ? pct + '%' : '—') + '</td>' +
+      '<td><span class="' + statusClass + '">' + statusText + '</span></td>';
     tbody.appendChild(tr);
   });
 
-  // Guidance text
-  const guidanceList = document.getElementById("parentGuidanceList");
-  guidanceList.innerHTML = "";
-
-  if (acc >= 80 && totalQ >= 5) {
-    guidanceList.innerHTML =
-      "<li>Your child seems comfortable with this chapter in this short sample.</li>" +
-      "<li>In the full app, move them to Hard / Advanced levels and time‑based tests.</li>";
-  } else if (acc >= 50 && totalQ >= 3) {
-    guidanceList.innerHTML =
-      "<li>Ask your child to repeat 1–2 Teach steps they find confusing.</li>" +
-      "<li>Let them do a few more questions from the Easy and Medium ladders.</li>";
+  const gl = document.getElementById('guidanceList');
+  gl.innerHTML = '';
+  if (!totalQ) {
+    gl.innerHTML = '<li>Child has not attempted any questions yet. Start with Learn tab.</li>';
+  } else if (acc >= 80) {
+    gl.innerHTML =
+      '<li>Child is doing well. Move them to Hard and Advanced practice levels.</li>' +
+      '<li>Ask them to explain one property in their own words.</li>';
+  } else if (acc >= 50) {
+    gl.innerHTML =
+      '<li>Ask child to re-read the Teach steps for concepts marked amber.</li>' +
+      '<li>Sit with them for one practice session on Medium level.</li>';
   } else {
-    guidanceList.innerHTML =
-      "<li>Sit with your child and go slowly through the first few Teach steps.</li>" +
-      "<li>Encourage them to answer just a couple of Easy questions without time pressure.</li>";
+    gl.innerHTML =
+      '<li>Go through the Teach steps together slowly.</li>' +
+      '<li>Focus on Easy level only until accuracy improves above 70%.</li>';
   }
 }
 
-// INITIAL
-showScreen("screen-learn");
+// ─── MODALS ──────────────────────────────────────────
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+function showInfo(title, body) {
+  document.getElementById('infoTitle').textContent = title;
+  document.getElementById('infoBody').textContent = body;
+  openModal('infoModal');
+}
+
+document.getElementById('openParentViewBtn')
+  .addEventListener('click', () => openModal('parentModal'));
+
+document.getElementById('closeParentBtn')
+  .addEventListener('click', () => closeModal('parentModal'));
+
+document.getElementById('openReportBtn').addEventListener('click', () => {
+  closeModal('parentModal');
+  document.querySelectorAll('.nav-tab')
+    .forEach(b => b.classList.remove('active'));
+  document.querySelector('.nav-tab[data-target="screen-reports"]')
+    .classList.add('active');
+  showScreen('screen-reports');
+  updateReports();
+});
+
+document.getElementById('closeInfoBtn')
+  .addEventListener('click', () => closeModal('infoModal'));
+
+document.getElementById('paymentCtaBtn').addEventListener('click', () => {
+  showInfo(
+    'Payment coming soon',
+    'In the full Nomad Tutor App this will unlock all practice levels, voice-over teaching and detailed reports.'
+  );
+});
+
+document.getElementById('downloadAppBtn').addEventListener('click', () => {
+  showInfo(
+    'Download SimplifyLiving',
+    'In the full release this will open the Google Play page for the SimplifyLiving app.'
+  );
+});
+
+document.getElementById('notifyBtn').addEventListener('click', () => {
+  showInfo(
+    'Notify me',
+    'In the full app you can leave your WhatsApp or email here to get updates when more chapters go live.'
+  );
+});
+
+// close modals on backdrop click
+document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+  backdrop.addEventListener('click', e => {
+    if (e.target === backdrop) backdrop.classList.remove('open');
+  });
+});
+
+// ─── INIT ────────────────────────────────────────────
+showScreen('screen-learn');
 updateTeachProgress();
