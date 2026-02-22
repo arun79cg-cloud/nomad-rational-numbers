@@ -1,0 +1,772 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Nomad Tutor Apps – Rational Numbers</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- paste the full HTML block from CodePen HERE -->
+  <script src="app.js"></script>
+<div id="app">
+  <header class="top-bar">
+    <div class="brand">
+      <div class="logo-leaf"></div>
+      <div class="brand-text">
+        <div class="brand-name">Nomad Tutor Apps</div>
+        <div class="brand-tagline">Class 8 • Rational Numbers</div>
+      </div>
+    </div>
+    <nav class="top-nav">
+      <button class="nav-tab active" data-target="screen-learn">Learn</button>
+      <button class="nav-tab" data-target="screen-practice">Practice</button>
+      <button class="nav-tab" data-target="screen-test">Test</button>
+      <button class="nav-tab" data-target="screen-reports">Reports</button>
+    </nav>
+    <button class="btn btn-ghost small" id="openParentViewBtn">
+      Parent
+    </button>
+  </header>
+
+  <main>
+    <!-- LEARN SCREEN -->
+    <section class="screen active" id="screen-learn">
+      <div class="card hero-card">
+        <h1>Rational Numbers – Full Tutor</h1>
+        <p class="muted">
+          Go step by step like a real teacher on the board. Complete each step
+          to unlock the next one.
+        </p>
+        <div class="progress-row">
+          <div class="progress-label">Teach progress</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="teachProgressFill"></div>
+          </div>
+          <div class="progress-value" id="teachProgressValue">0%</div>
+        </div>
+      </div>
+
+      <div class="segment-list">
+        <!-- Segment items are clickable, content is below -->
+        <button class="segment-btn active" data-segment="seg1">
+          1. Why rational numbers?
+        </button>
+        <button class="segment-btn" data-segment="seg2">
+          2. What is a rational number?
+        </button>
+        <button class="segment-btn" data-segment="seg3">
+          3. Closure property
+        </button>
+        <button class="segment-btn" data-segment="seg4">
+          4. Commutativity & associativity
+        </button>
+        <button class="segment-btn" data-segment="seg5">
+          5. Role of 0 & 1 (identities)
+        </button>
+        <button class="segment-btn" data-segment="seg6">
+          6. Inverse & reciprocal
+        </button>
+        <button class="segment-btn" data-segment="seg7">
+          7. Distributive property
+        </button>
+        <button class="segment-btn" data-segment="seg8">
+          8. On the number line
+        </button>
+        <button class="segment-btn" data-segment="seg9">
+          9. Between two rational numbers
+        </button>
+      </div>
+
+      <!-- Segment contents -->
+      <div class="segment-content">
+        <!-- SEGMENT 1 -->
+        <article class="teach-segment active" id="seg1">
+          <div class="card teach-card">
+            <div class="pill">Teach • Step 1 of 9</div>
+            <h2>Why do we need rational numbers?</h2>
+            <p>
+              We already know <strong>natural numbers</strong> (1, 2, 3 …) and
+              <strong>whole numbers</strong> (0, 1, 2, 3 …). They help us count
+              and do many simple sums.
+            </p>
+            <p>
+              But some equations do not have solutions inside these sets. For
+              example, the equation <strong>x + 18 = 5</strong> needs x = −13,
+              which is not a whole number. That made us bring in
+              <strong>integers</strong>.
+            </p>
+            <p>
+              Even integers are not enough. The equation <strong>2x = 3</strong>
+              needs x = 3/2. This is not an integer. So we extend our number
+              system once more and introduce <strong>rational numbers</strong>.
+            </p>
+            <div class="board">
+              <div class="board-title">Teacher board</div>
+              <p>Natural numbers → Whole numbers → Integers → Rational numbers</p>
+              <p>Each new set helps us solve more equations.</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Quick check</h3>
+            <p class="muted">Which equation needs a rational number to solve?</p>
+            <div class="options" data-question-id="qc1">
+              <button class="option" data-correct="false">x + 2 = 9</button>
+              <button class="option" data-correct="true">3x = 5</button>
+              <button class="option" data-correct="false">x − 3 = 0</button>
+            </div>
+            <div class="feedback" id="feedback-qc1"></div>
+            <button class="btn btn-primary small" data-complete-seg="seg1">
+              Mark step as understood
+            </button>
+          </div>
+        </article>
+
+        <!-- SEGMENT 2 -->
+        <article class="teach-segment" id="seg2">
+          <div class="card teach-card">
+            <div class="pill">Teach • Step 2 of 9</div>
+            <h2>What is a rational number?</h2>
+            <p>
+              A rational number is any number that can be written in the form
+              <strong>p/q</strong>, where <strong>p</strong> and
+              <strong>q</strong> are integers and <strong>q ≠ 0</strong>.
+            </p>
+            <p>
+              Whole numbers and integers are also rational numbers because we
+              can write them with denominator 1. For example, 4 = 4/1, 0 = 0/1,
+              −7 = −7/1.
+            </p>
+            <div class="board">
+              <div class="board-title">Examples</div>
+              <p>3/5, −7/2, 0, 4, −11 are all rational numbers.</p>
+              <p>Numbers like √2 or π cannot be written as p/q with integers.</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Quick check</h3>
+            <p class="muted">Select all rational numbers.</p>
+            <div class="options" data-question-id="qc2" data-multi="true">
+              <button class="option" data-correct="true">−5/8</button>
+              <button class="option" data-correct="false">√3</button>
+              <button class="option" data-correct="true">4</button>
+              <button class="option" data-correct="false">π</button>
+            </div>
+            <div class="feedback" id="feedback-qc2"></div>
+            <button class="btn btn-primary small" data-complete-seg="seg2">
+              Mark step as understood
+            </button>
+          </div>
+        </article>
+
+        <!-- SEGMENT 3: Closure -->
+        <article class="teach-segment" id="seg3">
+          <div class="card teach-card">
+            <div class="pill">Teach • Step 3 of 9</div>
+            <h2>Closure property</h2>
+            <p>
+              A set is <strong>closed</strong> under an operation if we start
+              with numbers from the set and the result is also in the set.
+            </p>
+            <div class="board">
+              <div class="board-title">Rational numbers</div>
+              <p>3/5 + 4/5 = 7/5 → rational ✔</p>
+              <p>−2/3 × 9/4 = −3/2 → rational ✔</p>
+              <p>So rational numbers are closed under addition and multiplication.</p>
+              <p>
+                Subtraction is also closed. But division is not closed because a
+                ÷ 0 is not defined.
+              </p>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Quick check</h3>
+            <p class="muted">Which operation is NOT closed for rational numbers?</p>
+            <div class="options" data-question-id="qc3">
+              <button class="option" data-correct="false">Addition</button>
+              <button class="option" data-correct="false">Subtraction</button>
+              <button class="option" data-correct="false">Multiplication</button>
+              <button class="option" data-correct="true">Division</button>
+            </div>
+            <div class="feedback" id="feedback-qc3"></div>
+            <button class="btn btn-primary small" data-complete-seg="seg3">
+              Mark step as understood
+            </button>
+          </div>
+        </article>
+
+        <!-- SEGMENT 4: Commutativity & associativity -->
+        <article class="teach-segment" id="seg4">
+          <div class="card teach-card">
+            <div class="pill">Teach • Step 4 of 9</div>
+            <h2>Commutativity & associativity</h2>
+            <p>
+              <strong>Commutative</strong> means we can change the order:
+              a + b = b + a or a × b = b × a.
+            </p>
+            <p>
+              <strong>Associative</strong> means we can change the grouping:
+              a + (b + c) = (a + b) + c and a × (b × c) = (a × b) × c.
+            </p>
+            <div class="board">
+              <div class="board-title">For rational numbers</div>
+              <p>Addition: commutative and associative.</p>
+              <p>Multiplication: commutative and associative.</p>
+              <p>Subtraction and division: neither commutative nor associative.</p>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Quick check</h3>
+            <p class="muted">Pick the true statement.</p>
+            <div class="options" data-question-id="qc4">
+              <button class="option" data-correct="false">
+                a − b = b − a for all rational numbers
+              </button>
+              <button class="option" data-correct="true">
+                a × b = b × a for all rational numbers
+              </button>
+              <button class="option" data-correct="false">
+                a ÷ b is always equal to b ÷ a
+              </button>
+            </div>
+            <div class="feedback" id="feedback-qc4"></div>
+            <button class="btn btn-primary small" data-complete-seg="seg4">
+              Mark step as understood
+            </button>
+          </div>
+        </article>
+
+        <!-- SEGMENT 5: identities -->
+        <article class="teach-segment" id="seg5">
+          <div class="card teach-card">
+            <div class="pill">Teach • Step 5 of 9</div>
+            <h2>The role of 0 and 1 (identities)</h2>
+            <p>
+              Zero acts as the <strong>additive identity</strong>. For any
+              rational number a, we have a + 0 = a = 0 + a.
+            </p>
+            <p>
+              One acts as the <strong>multiplicative identity</strong>. For any
+              rational number a, we have a × 1 = a = 1 × a.
+            </p>
+            <div class="board">
+              <div class="board-title">Identity recap</div>
+              <p>0 keeps the number same under addition.</p>
+              <p>1 keeps the number same under multiplication.</p>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Quick check</h3>
+            <p class="muted">
+              For −7/5, what is the additive identity and what is the
+              multiplicative identity?
+            </p>
+            <div class="options" data-question-id="qc5">
+              <button class="option" data-correct="true">0 and 1</button>
+              <button class="option" data-correct="false">1 and 0</button>
+              <button class="option" data-correct="false">−7/5 and 1</button>
+            </div>
+            <div class="feedback" id="feedback-qc5"></div>
+            <button class="btn btn-primary small" data-complete-seg="seg5">
+              Mark step as understood
+            </button>
+          </div>
+        </article>
+
+        <!-- SEGMENT 6: inverses -->
+        <article class="teach-segment" id="seg6">
+          <div class="card teach-card">
+            <div class="pill">Teach • Step 6 of 9</div>
+            <h2>Additive inverse & reciprocal</h2>
+            <p>
+              The <strong>additive inverse</strong> of a number a is the number
+              which gives 0 when added to a. For 3/4 it is −3/4.
+            </p>
+            <p>
+              The <strong>multiplicative inverse</strong> (or reciprocal) of
+              a rational number a/b (a, b ≠ 0) is b/a, because
+              (a/b) × (b/a) = 1.
+            </p>
+            <div class="board">
+              <div class="board-title">Examples</div>
+              <p>Additive inverse of −5/7 is 5/7.</p>
+              <p>Reciprocal of 3/5 is 5/3; reciprocal of −4 is −1/4.</p>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Quick check</h3>
+            <p class="muted">What is the reciprocal of −2/3?</p>
+            <div class="options" data-question-id="qc6">
+              <button class="option" data-correct="false">2/3</button>
+              <button class="option" data-correct="true">−3/2</button>
+              <button class="option" data-correct="false">3/2</button>
+            </div>
+            <div class="feedback" id="feedback-qc6"></div>
+            <button class="btn btn-primary small" data-complete-seg="seg6">
+              Mark step as understood
+            </button>
+          </div>
+        </article>
+
+        <!-- SEGMENT 7: distributive -->
+        <article class="teach-segment" id="seg7">
+          <div class="card teach-card">
+            <div class="pill">Teach • Step 7 of 9</div>
+            <h2>Distributive property</h2>
+            <p>
+              Multiplication is <strong>distributive</strong> over addition and
+              subtraction. For rational numbers:
+            </p>
+            <div class="board">
+              <div class="board-title">Rule</div>
+              <p>a × (b + c) = a × b + a × c</p>
+              <p>a × (b − c) = a × b − a × c</p>
+              <p>We use this to make calculations easier.</p>
+            </div>
+            <p>
+              Example: 3/5 × (10 + 5) = 3/5 × 10 + 3/5 × 5 = 6 + 3 = 9. This is
+              easier than first adding and then multiplying big numbers.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Quick check</h3>
+            <p class="muted">
+              Use distributive property: (−1/2)(6 + 4) = ?
+            </p>
+            <div class="options" data-question-id="qc7">
+              <button class="option" data-correct="false">−10/2</button>
+              <button class="option" data-correct="true">−5</button>
+              <button class="option" data-correct="false">5</button>
+            </div>
+            <div class="feedback" id="feedback-qc7"></div>
+            <button class="btn btn-primary small" data-complete-seg="seg7">
+              Mark step as understood
+            </button>
+          </div>
+        </article>
+
+        <!-- SEGMENT 8: number line -->
+        <article class="teach-segment" id="seg8">
+          <div class="card teach-card">
+            <div class="pill">Teach • Step 8 of 9</div>
+            <h2>Rational numbers on a number line</h2>
+            <p>
+              Every rational number can be shown on a number line. To place
+              p/q, we divide the distance between integers into equal parts.
+            </p>
+            <div class="board">
+              <div class="board-title">Example</div>
+              <p>
+                To plot 3/4, look between 0 and 1 and divide into 4 equal parts.
+                The third mark from 0 is 3/4.
+              </p>
+              <p>
+                To plot −5/2, go to −2 and then move half a unit to the left.
+              </p>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Quick check</h3>
+            <p class="muted">
+              3/5 lies between which two integers on the number line?
+            </p>
+            <div class="options" data-question-id="qc8">
+              <button class="option" data-correct="false">0 and 1</button>
+              <button class="option" data-correct="true">0 and 1</button>
+              <button class="option" data-correct="false">1 and 2</button>
+            </div>
+            <div class="feedback" id="feedback-qc8"></div>
+            <button class="btn btn-primary small" data-complete-seg="seg8">
+              Mark step as understood
+            </button>
+          </div>
+        </article>
+
+        <!-- SEGMENT 9: between two rationals -->
+        <article class="teach-segment" id="seg9">
+          <div class="card teach-card">
+            <div class="pill">Teach • Step 9 of 9</div>
+            <h2>Rational numbers between two rational numbers</h2>
+            <p>
+              Between any two different rational numbers, we can always find
+              many more rational numbers.
+            </p>
+            <p>
+              One simple method: take the <strong>average</strong> of the two
+              numbers. If a and b are rational, then
+              (a + b)/2 is a rational number between them.
+            </p>
+            <div class="board">
+              <div class="board-title">Example</div>
+              <p>Between 1/2 and 3/4:</p>
+              <p>(1/2 + 3/4)/2 = (5/4)/2 = 5/8, which lies between them.</p>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Quick check</h3>
+            <p class="muted">
+              Which of these lies between 0 and 1?
+            </p>
+            <div class="options" data-question-id="qc9">
+              <button class="option" data-correct="false">−1/3</button>
+              <button class="option" data-correct="true">2/5</button>
+              <button class="option" data-correct="false">5/4</button>
+            </div>
+            <div class="feedback" id="feedback-qc9"></div>
+            <button class="btn btn-primary small" data-complete-seg="seg9">
+              Mark step as understood
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <div class="card highlight-cta locked">
+        <h3>Unlock full chapter in Nomad</h3>
+        <p>
+          This sample shows the full Teach journey. In the real paid version
+          you will also get more examples, voice‑over explanations and
+          notebook checking.
+        </p>
+        <button class="btn btn-disabled" id="paymentCtaBtn">
+          Upgrade to full chapter (Coming soon)
+        </button>
+      </div>
+    </section>
+
+    <!-- PRACTICE SCREEN -->
+    <section class="screen" id="screen-practice">
+      <div class="card hero-card">
+        <h2>Practice ladder</h2>
+        <p class="muted">
+          Start from Easy and move up to Advanced. The app tracks accuracy for
+          each level.
+        </p>
+      </div>
+
+      <div class="level-tabs">
+        <button class="level-tab active" data-level="easy">Easy</button>
+        <button class="level-tab" data-level="medium">Medium</button>
+        <button class="level-tab" data-level="hard">Hard</button>
+        <button class="level-tab" data-level="advanced">Advanced</button>
+      </div>
+
+      <!-- Easy questions -->
+      <div class="level-panel active" id="level-easy">
+        <div class="card">
+          <div class="pill">Easy • Concept check</div>
+          <h3>Basic identification</h3>
+          <div class="practice-question" data-qid="p1" data-concept="definition">
+            <div class="q-label">Q1</div>
+            <p>Is 5 a rational number?</p>
+            <div class="options">
+              <button class="option" data-correct="true">Yes</button>
+              <button class="option" data-correct="false">No</button>
+            </div>
+            <div class="feedback" id="feedback-p1"></div>
+          </div>
+
+          <div class="practice-question" data-qid="p2" data-concept="closure">
+            <div class="q-label">Q2</div>
+            <p>Which operation is not closed for rational numbers?</p>
+            <div class="options">
+              <button class="option" data-correct="false">Addition</button>
+              <button class="option" data-correct="true">Division</button>
+              <button class="option" data-correct="false">Multiplication</button>
+            </div>
+            <div class="feedback" id="feedback-p2"></div>
+          </div>
+
+          <div class="practice-question" data-qid="p3" data-concept="identity">
+            <div class="q-label">Q3</div>
+            <p>
+              What is the multiplicative identity for any rational number?
+            </p>
+            <div class="options">
+              <button class="option" data-correct="true">1</button>
+              <button class="option" data-correct="false">0</button>
+              <button class="option" data-correct="false">−1</button>
+            </div>
+            <div class="feedback" id="feedback-p3"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Medium questions -->
+      <div class="level-panel" id="level-medium">
+        <div class="card">
+          <div class="pill">Medium • Using properties</div>
+          <h3>Apply closure, commutativity, identity</h3>
+
+          <div class="practice-question" data-qid="p4" data-concept="closure">
+            <div class="q-label">Q1</div>
+            <p>Compute 3/4 + 5/4 and say whether result is rational.</p>
+            <div class="options">
+              <button class="option" data-correct="true">2, yes rational</button>
+              <button class="option" data-correct="false">2, not rational</button>
+              <button class="option" data-correct="false">8/4, not rational</button>
+            </div>
+            <div class="feedback" id="feedback-p4"></div>
+          </div>
+
+          <div class="practice-question" data-qid="p5" data-concept="comm-assoc">
+            <div class="q-label">Q2</div>
+            <p>
+              Using commutativity: (−2/3) + (5/3) = (5/3) + ( ? ) . Fill the
+              blank.
+            </p>
+            <div class="options">
+              <button class="option" data-correct="true">−2/3</button>
+              <button class="option" data-correct="false">2/3</button>
+              <button class="option" data-correct="false">5/3</button>
+            </div>
+            <div class="feedback" id="feedback-p5"></div>
+          </div>
+
+          <div class="practice-question" data-qid="p6" data-concept="identity">
+            <div class="q-label">Q3</div>
+            <p>
+              Which expression shows the use of multiplicative identity?
+            </p>
+            <div class="options">
+              <button class="option" data-correct="false">a + 0 = a</button>
+              <button class="option" data-correct="true">a × 1 = a</button>
+              <button class="option" data-correct="false">a × 0 = 0</button>
+            </div>
+            <div class="feedback" id="feedback-p6"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hard questions -->
+      <div class="level-panel" id="level-hard">
+        <div class="card">
+          <div class="pill">Hard • Multi‑step</div>
+          <h3>Use several properties together</h3>
+
+          <div class="practice-question" data-qid="p7" data-concept="distributive">
+            <div class="q-label">Q1</div>
+            <p>
+              Simplify using distributive property: (3/5)(10 + 5)
+            </p>
+            <div class="options">
+              <button class="option" data-correct="false">9/5</button>
+              <button class="option" data-correct="true">9</button>
+              <button class="option" data-correct="false">15</button>
+            </div>
+            <div class="feedback" id="feedback-p7"></div>
+          </div>
+
+          <div class="practice-question" data-qid="p8" data-concept="comm-assoc">
+            <div class="q-label">Q2</div>
+            <p>
+              Use associativity: (1/2 + 1/3) + 1/6 = 1/2 + (1/3 + ?)
+            </p>
+            <div class="options">
+              <button class="option" data-correct="true">1/6</button>
+              <button class="option" data-correct="false">1/2</button>
+              <button class="option" data-correct="false">1/3</button>
+            </div>
+            <div class="feedback" id="feedback-p8"></div>
+          </div>
+
+          <div class="practice-question" data-qid="p9" data-concept="inverse">
+            <div class="q-label">Q3</div>
+            <p>
+              Add a rational number and its additive inverse: 7/9 + ( ? ) = 0
+            </p>
+            <div class="options">
+              <button class="option" data-correct="false">7/9</button>
+              <button class="option" data-correct="true">−7/9</button>
+              <button class="option" data-correct="false">9/7</button>
+            </div>
+            <div class="feedback" id="feedback-p9"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Advanced questions -->
+      <div class="level-panel" id="level-advanced">
+        <div class="card">
+          <div class="pill">Advanced • Reasoning</div>
+          <h3>Between numbers & number line</h3>
+
+          <div class="practice-question" data-qid="p10" data-concept="between">
+            <div class="q-label">Q1</div>
+            <p>Which is a rational number between 1/2 and 3/4?</p>
+            <div class="options">
+              <button class="option" data-correct="true">5/8</button>
+              <button class="option" data-correct="false">1/4</button>
+              <button class="option" data-correct="false">5/4</button>
+            </div>
+            <div class="feedback" id="feedback-p10"></div>
+          </div>
+
+          <div class="practice-question" data-qid="p11" data-concept="between">
+            <div class="q-label">Q2</div>
+            <p>
+              Average method: The number between 0 and 2/3 using (a + b)/2 is?
+            </p>
+            <div class="options">
+              <button class="option" data-correct="true">1/3</button>
+              <button class="option" data-correct="false">1/2</button>
+              <button class="option" data-correct="false">2/3</button>
+            </div>
+            <div class="feedback" id="feedback-p11"></div>
+          </div>
+
+          <div class="practice-question" data-qid="p12" data-concept="numberline">
+            <div class="q-label">Q3</div>
+            <p>
+              7/4 lies between which integers on the number line?
+            </p>
+            <div class="options">
+              <button class="option" data-correct="false">0 and 1</button>
+              <button class="option" data-correct="false">1 and 2</button>
+              <button class="option" data-correct="true">1 and 2</button>
+            </div>
+            <div class="feedback" id="feedback-p12"></div>
+          </div>
+
+          <p class="tiny muted">
+            In the full version, Advanced will include more NCERT‑style and
+            exemplar problems.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TEST SCREEN -->
+    <section class="screen" id="screen-test">
+      <div class="card hero-card">
+        <h2>Chapter test</h2>
+        <p class="muted">
+          A short 10‑question test mixing all concepts. This is a sample for
+          teachers and parents.
+        </p>
+        <button class="btn btn-primary" id="startTestBtn">
+          Start test
+        </button>
+        <div class="test-status tiny muted" id="testStatus"></div>
+      </div>
+
+      <div class="card" id="testCard" style="display:none;">
+        <div class="pill" id="testProgressPill">Question 1 of 10</div>
+        <h3 id="testQuestionText">Question text here</h3>
+        <div class="options" id="testOptions"></div>
+        <div class="feedback" id="testFeedback"></div>
+        <button class="btn btn-primary" id="nextTestQuestionBtn" disabled>
+          Next
+        </button>
+      </div>
+    </section>
+
+    <!-- REPORTS SCREEN -->
+    <section class="screen" id="screen-reports">
+      <div class="card hero-card">
+        <h2>Parent report (sample)</h2>
+        <p class="muted tiny">
+          These numbers are based on this device only. In the full app, the
+          report will sync across devices using SimplifyLiving.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>Today’s snapshot</h3>
+        <div class="kpi-row">
+          <div class="kpi">
+            <div class="kpi-label">Time in app (approx)</div>
+            <div class="kpi-value" id="kpiTime">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Questions answered</div>
+            <div class="kpi-value" id="kpiQuestions">0</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Overall accuracy</div>
+            <div class="kpi-value" id="kpiAccuracy">0%</div>
+          </div>
+        </div>
+
+        <h4>Concept‑wise comfort (practice + test)</h4>
+        <table class="concept-table">
+          <thead>
+            <tr>
+              <th>Concept</th>
+              <th>Accuracy</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="conceptTableBody">
+            <!-- Filled by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Simple guidance for parent</h3>
+        <ul class="simple-list" id="parentGuidanceList">
+          <li>Ask your child to read aloud one example from “Learn”.</li>
+          <li>Let them explain what a rational number is in their own words.</li>
+        </ul>
+      </div>
+
+      <div class="card hero-card">
+        <h3>More chapters in SimplifyLiving</h3>
+        <p>
+          All Nomad Tutor Apps will live inside the SimplifyLiving app,
+          organised subject‑wise and class‑wise.
+        </p>
+        <ul class="simple-list">
+          <li>Track multiple children from one screen.</li>
+          <li>Daily and weekly progress alerts.</li>
+          <li>More chapters for Maths, Science and other subjects.</li>
+        </ul>
+        <div class="cta-row">
+          <button class="btn btn-primary" id="downloadAppBtn">
+            Download SimplifyLiving (Coming soon)
+          </button>
+          <button class="btn btn-ghost" id="notifyBtn">
+            Notify me when ready
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    Nomad Tutor Apps • Rational Numbers preview
+  </footer>
+
+  <!-- Parent modal -->
+  <div class="modal-backdrop" id="parentModal">
+    <div class="modal">
+      <h3>Parent view</h3>
+      <p class="tiny muted">
+        In the full app this area will be PIN‑protected. For this demo you can
+        open the sample report directly.
+      </p>
+      <button class="btn btn-primary" id="openSampleReportBtn">
+        Open report
+      </button>
+      <button class="btn btn-ghost" id="closeParentModalBtn">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <!-- Info modal -->
+  <div class="modal-backdrop" id="infoModal">
+    <div class="modal">
+      <h3 id="infoModalTitle">Coming soon</h3>
+      <p id="infoModalBody">
+        This is a placeholder CTA. In the full version, payment and downloads
+        will be available.
+      </p>
+      <button class="btn btn-primary" id="closeInfoModalBtn">OK</button>
+    </div>
+  </div>
+</div>
+</html>
